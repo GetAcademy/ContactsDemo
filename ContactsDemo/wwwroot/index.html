@@ -87,15 +87,18 @@
             getData();
         }
 
-        function updatePerson(){
-            const person = model.contacts.find(p => p.id == model.inputs.id);
-            if (person == null) return;
-            person.firstName = model.inputs.firstName;
-            person.email = model.inputs.email;
+        async function updatePerson(){
+            const contact = model.contacts.find(p => p.id == model.inputs.id);
+            if (contact == null) return;
+            contact.firstName = model.inputs.firstName;
+            contact.email = model.inputs.email;
+            let response = await axios.put('/contacts', contact);
+            getData();
         }
 
         async function deletePerson(id) {
             let response = await axios.delete('/contacts/' + id);
+            let wasDeleted = response.data;
             getData();
         }
 

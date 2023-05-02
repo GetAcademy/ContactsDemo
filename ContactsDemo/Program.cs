@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ContactsDemo.Model;
 
 /*
@@ -7,42 +8,86 @@ using ContactsDemo.Model;
  *   - Update
  *   - Delete
  */
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-var contacts = new List<Contact>
+if (app.Environment.IsDevelopment())
 {
-    new Contact("1", "Per", "per@mail.com"),
-    new Contact("2", "Pål", "paa@mail.com"),
-};
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+//var contacts = new List<Contact>();
+
 
 app.MapGet("/contacts", () =>
 {
-    return contacts;
+    return GetAllContacts();
 });
 app.MapPost("/contacts", (Contact contact) =>
 {
+    var contacts = GetAllContacts();
     contacts.Add(contact);
+    SaveAllContacts(contacts);
 });
-app.MapDelete("/contacts/{@id}", (string id) =>
+app.MapDelete("/contacts/{id}", (string id) =>
 {
-    var index = contacts.FindIndex(c=>c.Id==id);
+    var contacts = GetAllContacts();
+    var index = contacts.FindIndex(c => c.Id == id);
+    if (index == -1) return false;
     contacts.RemoveAt(index);
+    SaveAllContacts(contacts);
+    return true;
 });
+app.MapPut("/contacts", (Contact contactFromFrontend) =>
+{
+    var contacts = GetAllContacts();
+    var contact = contacts.Find(c => c.Id == contactFromFrontend.Id);
+    contact.FirstName = contactFromFrontend.FirstName;
+    contact.Email = contactFromFrontend.Email;
+    SaveAllContacts(contacts);
+});
+//app.MapGet("/contacts", () =>
+//{
+//    return contacts;
+//});
+//app.MapPost("/contacts", (Contact contact) =>
+//{
+//    contacts.Add(contact);
+//});
+//app.MapDelete("/contacts/{id}", (string id) =>
+//{
+//    var index = contacts.FindIndex(c=>c.Id==id);
+//    if (index == -1) return false;
+//    contacts.RemoveAt(index);
+//    return true;
+//});
+//app.MapPut("/contacts", (Contact contactFromFrontend) =>
+//{
+//    var contact = contacts.Find(c => c.Id == contactFromFrontend.Id);
+//    contact.FirstName = contactFromFrontend.FirstName;
+//    contact.Email = contactFromFrontend.Email;
+//});
 app.Run();
 
+List<Contact> GetAllContacts()
+{
+    if (!File.Exists("contacts.json")) return new List<Contact>();
+    var json = File.ReadAllText("contacts.json");
+    return JsonSerializer.Deserialize<List<Contact>>(json);
+}
+
+void SaveAllContacts(List<Contact> contacts)
+{
+    var json = JsonSerializer.Serialize(contacts);
+    File.WriteAllText("contacts.json", json);
+}
 
 
 
 
-
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
-
-
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
