@@ -39,7 +39,7 @@
                     value="${model.inputs.email || ''}"
                 /><br/>
 
-                <button onclick="creatOrUpdatePerson()">
+                <button onclick="createOrUpdatePerson()">
                     ${model.inputs.id == null ? 'Lag ny' : 'Rediger'}
                 </button>
             `;
@@ -66,7 +66,7 @@
             updateView();
         }
 
-        function creatOrUpdatePerson() {
+        function createOrUpdatePerson() {
             if (model.inputs.id == null) createPerson();
             else updatePerson();
             model.inputs = {
@@ -77,13 +77,14 @@
             updateView();
         }
 
-        function createPerson() {
-            const person = {
+        async function createPerson() {
+            const contact = {
                 id: Math.random().toString(16).slice(2),
                 firstName: model.inputs.firstName,
                 email: model.inputs.email,
             };
-            model.contacts.push(person);
+            let response = await axios.post('/contacts', contact);
+            getData();
         }
 
         function updatePerson(){
@@ -93,11 +94,9 @@
             person.email = model.inputs.email;
         }
 
-        function deletePerson(id) {
-            const index = model.contacts.findIndex(p => p.id == id);
-            if (index == -1) return;
-            model.contacts.splice(index, 1);
-            updateView();
+        async function deletePerson(id) {
+            let response = await axios.delete('/contacts/' + id);
+            getData();
         }
 
         function editPerson(id) {

@@ -21,6 +21,15 @@ app.MapGet("/contacts", () =>
 {
     return contacts;
 });
+app.MapPost("/contacts", (Contact contact) =>
+{
+    contacts.Add(contact);
+});
+app.MapDelete("/contacts/{@id}", (string id) =>
+{
+    var index = contacts.FindIndex(c=>c.Id==id);
+    contacts.RemoveAt(index);
+});
 app.Run();
 
 

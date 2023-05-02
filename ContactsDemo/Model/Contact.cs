@@ -8,7 +8,6 @@
 
         public Contact()
         {
-            
         }
 
         public Contact(string id, string firstName, string email)
